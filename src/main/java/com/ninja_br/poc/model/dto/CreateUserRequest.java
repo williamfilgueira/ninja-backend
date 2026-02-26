@@ -1,17 +1,20 @@
 package com.ninja_br.poc.model.dto;
 
+import com.ninja_br.poc.model.Role;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 
 public record CreateUserRequest(
-        @NotBlank @Email @Size(max = 120) String email,
-        @NotBlank @Size(min = 6, max = 72) String senha,
-        @NotNull String role,
-        LocalDateTime expiraEm,
-        @Size(max = 150) String nome
+        @NotNull String nome,
+        @NotNull @Email String email,
+        @NotNull String senha,
+        @NotNull Role role,
+        boolean bloqueado,
+        Instant expiraEm
 ) {
 }

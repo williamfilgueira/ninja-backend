@@ -1,5 +1,6 @@
 package com.ninja_br.poc.controller;
 
+import com.ninja_br.poc.model.Role;
 import com.ninja_br.poc.model.dto.CreateUserRequest;
 import com.ninja_br.poc.model.dto.UpdateUserRequest;
 import com.ninja_br.poc.model.dto.UserResponse;
@@ -43,6 +44,9 @@ public class UsuarioController {
     @PreAuthorize("hasRole('MODERATOR')")
     @PostMapping("/moderator")
     public UserResponse criarComoModerator(@RequestBody @Valid CreateUserRequest req) {
+        if (req.role() == Role.ADMIN) {
+            throw new RuntimeException("Moderador não pode criar ADMIN");
+        }
         return toResponse(service.criarComoModerator(req));
     }
 
