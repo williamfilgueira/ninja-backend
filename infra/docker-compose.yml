@@ -19,15 +19,15 @@ services:
 
   api:
     build:
-      context: ..
+      context: .
       dockerfile: Dockerfile
     container_name: ninja_api
     environment:
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-prod}
       # DB
       SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/${MYSQL_DATABASE:-ninja_br}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
-      SPRING_DATASOURCE_USERNAME: ${MYSQL_USER:root}
-      SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD:123321}
+      SPRING_DATASOURCE_USERNAME: ${MYSQL_USER:-root}
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD:-123321}
       JWT_SECRET: ${JWT_SECRET}
       JWT_ISSUER: ${JWT_ISSUER:-ninja-br}
       JWT_EXP_MINUTES: ${JWT_EXP_MINUTES:-120}
