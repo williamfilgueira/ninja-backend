@@ -15,6 +15,6 @@ public record CreateUserRequest(
         @NotNull String senha,
         @NotNull Role role,
         boolean bloqueado,
-        Instant expiraEm
+        LocalDateTime expiraEm
 ) {
 }

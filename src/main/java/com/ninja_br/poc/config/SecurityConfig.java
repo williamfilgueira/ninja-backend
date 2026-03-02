@@ -1,9 +1,12 @@
 package com.ninja_br.poc.config;
 
 import com.nimbusds.jose.jwk.source.ImmutableSecret;
+import com.ninja_br.poc.repository.MachineRepository;
+import com.ninja_br.poc.service.MachineTokenHasher;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.Customizer;
@@ -32,8 +35,30 @@ public class SecurityConfig {
     @Value("${app.security.jwt.secret-key}")
     private String secretKey;
 
+
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    @Order(1)
+    public SecurityFilterChain agentChain(HttpSecurity http,
+                                          MachineRepository machineRepo,
+                                          MachineTokenHasher hasher) throws Exception {
+
+        http.securityMatcher("/agent/**")
+                .cors(Customizer.withDefaults())
+                .csrf(csrf -> csrf.disable())
+                .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .httpBasic(b -> b.disable())
+                .formLogin(f -> f.disable())
+                .logout(l -> l.disable())
+                .authorizeHttpRequests(auth -> auth.anyRequest().hasRole("MACHINE"))
+                .addFilterBefore(new MachineTokenAuthFilter(machineRepo, hasher),
+                        org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class);
+
+        return http.build();
+    }
+
+    @Bean
+    @Order(2)
+    public SecurityFilterChain apiChain(HttpSecurity http) throws Exception {
         http
                 .cors(Customizer.withDefaults())
                 .csrf(csrf -> csrf.disable())
@@ -42,12 +67,11 @@ public class SecurityConfig {
                 .formLogin(f -> f.disable())
                 .logout(l -> l.disable())
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/agent/**").permitAll() // path sem /api por causa do context-path
                         .requestMatchers("/auth/login").permitAll()
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
-                        .requestMatchers("/api/auth/login", "/api/v3/api-docs/**", "/api/swagger-ui/**", "/api/swagger-ui.html").permitAll()
                         .requestMatchers("/error").permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        .requestMatchers("/api/auth/login").permitAll()
                         .anyRequest().authenticated()
                 )
                 .oauth2ResourceServer(oauth -> oauth
@@ -56,6 +80,8 @@ public class SecurityConfig {
 
         return http.build();
     }
+
+
 
     @Bean
     public JwtDecoder jwtDecoder() {

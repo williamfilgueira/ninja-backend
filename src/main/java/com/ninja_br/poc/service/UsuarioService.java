@@ -37,7 +37,7 @@ public class UsuarioService {
         String email = normEmail(req.email());
         if (usuarioRepository.existsByEmail(email)) throw new RuntimeException("Email já cadastrado");
 
-        Role role = parseRole(req.role());
+        Role role = parseRole(req.role().name());
 
         Usuario user = new Usuario();
         user.setNome(req.nome() == null ? "Sem nome" : req.nome().trim());
